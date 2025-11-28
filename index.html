@@ -322,23 +322,23 @@
 
     <button class="upgrade-button" data-upgrade="attack">
       <div class="upgrade-title-line">
-        <span>공격력 +30%</span><span>[10 에너지]</span>
+        <span>공격력 증가/span><span>[10 에너지]</span>
       </div>
-      <div class="upgrade-desc">총알과 근접 공격의 피해량이 30%씩 증가합니다.</div>
+      <div class="upgrade-desc">총알과 근접 공격의 피해량이 증가합니다.</div>
     </button>
 
     <button class="upgrade-button" data-upgrade="fireRate">
       <div class="upgrade-title-line">
-        <span>발사 간격 -10%</span><span>[10 에너지]</span>
+        <span>발사 간격 감소</span><span>[10 에너지]</span>
       </div>
-      <div class="upgrade-desc">탄환/근접 공격 사이의 대기 시간이 10% 감소합니다.</div>
+      <div class="upgrade-desc">탄환/근접 공격 사이의 대기 시간이 감소합니다.</div>
     </button>
 
     <button class="upgrade-button" data-upgrade="moveSpeed">
       <div class="upgrade-title-line">
-        <span>이동 속도 +10%</span><span>[10 에너지]</span>
+        <span>이동 속도 증가</span><span>[10 에너지]</span>
       </div>
-      <div class="upgrade-desc">회색지대에서의 이동 속도가 10% 빨라집니다.</div>
+      <div class="upgrade-desc">회색지대에서의 이동 속도가 빨라집니다.</div>
     </button>
 
     <button id="upgradeContinue" class="overlay-btn">회색지대로 돌아가기 (다음 스테이지)</button>
@@ -348,7 +348,7 @@
   <div id="deadOverlay" class="overlay hidden">
     <div class="overlay-title">완전 패배</div>
     <div class="overlay-sub">
-      회색지대에서 몸을 잃었습니다.<br>
+      회색지대에서 목숨을 잃었습니다.<br>
       지금까지 모은 업그레이드와 스테이지가<br>
       모두 초기화됩니다.
     </div>
@@ -586,10 +586,10 @@
       return PLAYER_BASE_SPEED * (1 + 0.1 * meta.moveSpeedLevel);
     }
     function getBulletDamage() {
-      return 14 * (1 + 0.3 * meta.attackLevel);
+      return 21 * (1 + 0.4 * meta.attackLevel);
     }
     function getMeleeDamage() {
-      return 28 * (1 + 0.3 * meta.attackLevel);
+      return 35 * (1 + 0.4 * meta.attackLevel);
     }
 
     function updateUpgradeUI() {
@@ -1496,3 +1496,4 @@
   </script>
 </body>
 </html>
+
