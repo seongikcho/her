@@ -1248,7 +1248,7 @@
         }
 
         if (nearest) {
-          const fireRateMul = 1 + 0.10 * meta.fireRateLevel;
+          const fireRateMul = 1 + 0.20 * meta.fireRateLevel;
           const dx = nearest.x - player.x;
           const dy = nearest.y - player.y;
           const dist = Math.hypot(dx, dy) || 1;
@@ -1567,4 +1567,5 @@
   </script>
 </body>
 </html>
+
 
