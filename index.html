@@ -173,14 +173,6 @@
       touch-action: manipulation;
     }
 
-    /* 패배 스코어 표시 */
-    #deadScore {
-      margin-top: 12px;
-      font-size: 13px;
-      line-height: 1.6;
-      white-space: pre-line;
-    }
-
     /* 튜토리얼 힌트 (크게) */
     #tutorialHint {
       position: fixed;
@@ -275,6 +267,27 @@
       pointer-events: none;
       text-shadow: 0 0 4px rgba(0,0,0,0.8);
     }
+
+    /* 패배 스코어 */
+    #deadScoreWrap {
+      margin-top: 8px;       /* 설명 텍스트와 간격 */
+      margin-bottom: 28px;   /* 최종 스코어와 버튼 사이 간격 */
+      text-align: center;
+    }
+    #deadScoreBreakdown {
+      font-size: 13px;
+      line-height: 1.7;
+      opacity: 0.9;
+      white-space: pre-line;
+    }
+    #deadScoreFinal {
+      margin-top: 12px;
+      font-size: 22px;
+      font-weight: 800;
+      color: #00ffcc;
+      text-shadow: 0 0 12px rgba(0,255,204,0.9);
+      letter-spacing: 0.04em;
+    }
   </style>
 </head>
 <body>
@@ -360,7 +373,13 @@
       지금까지 모은 업그레이드와 스테이지가<br>
       모두 초기화됩니다.
     </div>
-    <div id="deadScore"></div>
+
+    <!-- 스코어 표시 영역 -->
+    <div id="deadScoreWrap">
+      <div id="deadScoreBreakdown"></div>
+      <div id="deadScoreFinal"></div>
+    </div>
+
     <button id="deadRestart" class="overlay-btn">처음부터 다시</button>
   </div>
 
@@ -418,7 +437,9 @@
     const deadRestart    = document.getElementById('deadRestart');
     const clearOverlay   = document.getElementById('clearOverlay');
     const clearRestart   = document.getElementById('clearRestart');
-    const deadScore      = document.getElementById('deadScore');
+
+    const deadScoreBreakdown = document.getElementById('deadScoreBreakdown');
+    const deadScoreFinal     = document.getElementById('deadScoreFinal');
 
     const bgm = document.getElementById('bgm');
     let bgmStarted = false;
@@ -527,17 +548,14 @@
       attackLevel: 0,
       fireRateLevel: 0,
       moveSpeedLevel: 0,
-      stageLevel: 0,   // 0~4
-      killCount: 0,
-      totalSurvivalTime: 0,
-      totalEnergyGained: 0
+      stageLevel: 0   // 0~4
     };
 
-    let lastScore = {
-      kills: 0,
-      time: 0,
-      energy: 0,
-      total: 0
+    // 전체 러닝 동안 누적 스코어
+    const stats = {
+      totalKills: 0,
+      totalSurvivalTime: 0,   // 초 단위 dt 누적
+      totalEnergyGained: 0
     };
 
     let player = null;
@@ -646,15 +664,29 @@
       }
     }
 
+    // 패배 시 스코어 UI 업데이트
+    function updateDeadScoreUI() {
+      if (!deadScoreBreakdown || !deadScoreFinal) return;
+
+      const kills = stats.totalKills || 0;
+      const totalTimeSec = Math.floor(stats.totalSurvivalTime || 0);
+      const totalEnergy = stats.totalEnergyGained || 0;
+      const totalScore = kills + totalTimeSec + totalEnergy;
+
+      deadScoreBreakdown.textContent =
+        `처치한 디소더 수 : ${kills}\n` +
+        `총 버틴 시간      : ${totalTimeSec}초\n` +
+        `총 획득 에너지    : ${totalEnergy}`;
+
+      deadScoreFinal.textContent = `총 스코어 : ${totalScore}`;
+    }
+
     function resetAllProgress() {
       meta.totalEnergy    = 0;
       meta.attackLevel    = 0;
       meta.fireRateLevel  = 0;
       meta.moveSpeedLevel = 0;
       meta.stageLevel     = 0;
-      meta.killCount      = 0;
-      meta.totalSurvivalTime = 0;
-      meta.totalEnergyGained = 0;
 
       runEnergy   = 0;
       runTime     = 0;
@@ -718,28 +750,20 @@
 
     function hardRestart() {
       resetAllProgress();
+      // 새 생명 시작이므로 스코어도 초기화
+      stats.totalKills = 0;
+      stats.totalSurvivalTime = 0;
+      stats.totalEnergyGained = 0;
       resetRunForCurrentStage();
     }
 
     function onPlayerDead() {
-      // 이번 스테이지 버틴 시간 누적
-      meta.totalSurvivalTime += runTime;
-
-      // 최종 스코어 계산
-      lastScore.kills  = meta.killCount;
-      lastScore.time   = meta.totalSurvivalTime;
-      lastScore.energy = meta.totalEnergyGained;
-      lastScore.total  = lastScore.kills + Math.floor(lastScore.time) + lastScore.energy;
-
-      deadScore.textContent =
-        `처치한 디소더 수 : ${lastScore.kills}\n` +
-        `총 버틴 시간 : ${formatTime(lastScore.time)}\n` +
-        `총 획득한 에너지량 : ${lastScore.energy}\n` +
-        `총 스코어 : ${lastScore.total}`;
-
       gameMode = 'dead';
 
-      // 패배 시 진행 정보는 초기화
+      // 먼저 스코어 계산해서 화면에 반영
+      updateDeadScoreUI();
+
+      // 패배 시 진행 정보 리셋 (메타/스테이지/업그레이드)
       resetAllProgress();
 
       enemies      = [];
@@ -761,9 +785,6 @@
 
     // ===== 현실로 귀환 / 업그레이드 =====
     function moveToUpgrade() {
-      // 이번 스테이지 버틴 시간 누적
-      meta.totalSurvivalTime += runTime;
-
       gameMode = 'upgrade';
       meta.totalEnergy += runEnergy;
       runEnergy = 0;
@@ -999,7 +1020,8 @@
         boss.hp = 0;
         boss = null;
         runEnergy += 8;
-        meta.totalEnergyGained += 8;
+        stats.totalKills += 1;
+        stats.totalEnergyGained += 8;
         onGameClear();
       }
     }
@@ -1114,7 +1136,9 @@
       if (!player) return;
 
       runTime += dt;
+      stats.totalSurvivalTime += dt;
       cycleTime += dt;
+
       if (!isGreen && cycleTime >= 29.5) {
         isGreen = true;
         greenTimer = 2.0;
@@ -1299,7 +1323,7 @@
         const e = enemies[i];
         if (e.hp <= 0) {
           enemies.splice(i, 1);
-          meta.killCount++;
+          stats.totalKills += 1;
           const amount = getEnergyAmountForType(e.type);
           let r = 3;
           if (amount === 2) r = 5;
@@ -1346,7 +1370,7 @@
         const dist = Math.hypot(dx, dy);
         if (dist < player.radius + g.radius) {
           runEnergy += g.amount;
-          meta.totalEnergyGained += g.amount;
+          stats.totalEnergyGained += g.amount;
           energies.splice(i, 1);
         }
       }
@@ -1528,6 +1552,9 @@
         location.hash = '';
       }
       resetAllProgress();
+      stats.totalKills = 0;
+      stats.totalSurvivalTime = 0;
+      stats.totalEnergyGained = 0;
       resetRunForCurrentStage();
     }
 
