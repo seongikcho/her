@@ -36,22 +36,31 @@
       flex-direction: column;
       pointer-events: none;
       text-shadow: 0 0 6px rgba(0,0,0,0.9);
+      z-index: 11;
     }
     #hud-top {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column; /* HP 위, 스테이지 아래 */
+      align-items: flex-start;
+      gap: 2px;
       font-size: 16px;
       margin-bottom: 4px;
     }
     #hud-hp {
-      font-size: 18px;  /* 모바일용으로 소폭 축소 */
+      font-size: 18px;
       font-weight: 700;
       color: #ff5555;
     }
+    /* 타이머 - 상단 중앙 고정 */
     #hud-timer {
-      font-size: 22px;  /* 타이머는 여전히 크게 */
+      position: fixed;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 24px;
       font-weight: 700;
+      text-shadow: 0 0 8px rgba(0,0,0,0.9);
+      z-index: 12;
     }
     #hud-stage {
       font-size: 14px;
@@ -67,13 +76,13 @@
       position: fixed;
       right: 16px;
       bottom: 26px;
-      width: 130px;   /* 150 → 130 */
-      height: 52px;   /* 60 → 52 */
+      width: 130px;
+      height: 52px;
       border-radius: 12px;
       background: #222;
       border: 2px solid #555;
       color: #f5f5f5;
-      font-size: 13px;  /* 14 → 13 */
+      font-size: 13px;
       font-weight: 600;
       display: flex;
       align-items: center;
@@ -94,13 +103,13 @@
       opacity: 0.4;
     }
 
-    /* 가상 조이스틱 - 더 작게 */
+    /* 가상 조이스틱 - 더 작게 & 짧은 이동 범위 */
     #joystick {
       position: fixed;
-      left: 16px;
-      bottom: 20px;
-      width: 110px;   /* 140 → 110 */
-      height: 110px;  /* 140 → 110 */
+      left: 12px;
+      bottom: 18px;
+      width: 90px;    /* 110 → 90 */
+      height: 90px;   /* 110 → 90 */
       z-index: 10;
       touch-action: none;
     }
@@ -108,8 +117,8 @@
       position: absolute;
       left: 0;
       bottom: 0;
-      width: 100px;   /* 120 → 100 */
-      height: 100px;  /* 120 → 100 */
+      width: 80px;    /* 100 → 80 */
+      height: 80px;   /* 100 → 80 */
       border-radius: 50%;
       background: rgba(0,0,0,0.6);
       border: 2px solid rgba(255,255,255,0.2);
@@ -117,11 +126,11 @@
     #stick-knob {
       position: absolute;
       left: 50%;
-      top: 50%;       /* 중앙 기준 */
-      width: 40px;    /* 48 → 40 */
-      height: 40px;   /* 48 → 40 */
-      margin-left: -20px;
-      margin-top: -20px;
+      top: 50%;
+      width: 34px;    /* 40 → 34 */
+      height: 34px;
+      margin-left: -17px;
+      margin-top: -17px;
       border-radius: 50%;
       background: rgba(255,255,255,0.7);
     }
@@ -143,13 +152,13 @@
       display: none;
     }
     .overlay-title {
-      font-size: 24px;   /* 28 → 24 */
+      font-size: 24px;
       margin-bottom: 10px;
       font-weight: 700;
     }
     .overlay-sub {
-      font-size: 14px;   /* 15 → 14 */
-      margin-bottom: 18px; /* 22 → 18 */
+      font-size: 14px;
+      margin-bottom: 18px;
       line-height: 1.6;
       white-space: pre-line;
     }
@@ -159,7 +168,7 @@
       border: 1px solid #00ff99;
       background: #0f3f2a;
       color: #f5f5f5;
-      font-size: 15px;  /* 16 → 15 */
+      font-size: 15px;
       font-weight: 600;
       box-shadow: 0 0 12px rgba(0,255,153,0.7);
       touch-action: manipulation;
@@ -175,7 +184,7 @@
       background: rgba(0,0,0,0.9);
       border-radius: 12px;
       border: 2px solid #00ff99;
-      font-size: 14px;  /* 15 → 14 */
+      font-size: 14px;
       line-height: 1.6;
       text-align: center;
       max-width: 320px;
@@ -233,7 +242,7 @@
       position: fixed;
       inset: 0;
       pointer-events: none;
-      border: 3px solid transparent;  /* 4 → 3 */
+      border: 3px solid transparent;
       box-shadow: none;
       z-index: 9;
     }
@@ -270,9 +279,9 @@
   <div id="hud">
     <div id="hud-top">
       <div id="hud-hp">HP 100</div>
-      <div id="hud-timer">00:00</div>
       <div id="hud-stage">Stage 1 (회색지대)</div>
     </div>
+    <div id="hud-timer">00:00</div>
     <div id="hud-energy">에너지: 0 | 총: 0</div>
   </div>
 
@@ -372,7 +381,7 @@
       viewH = window.innerHeight;
       canvas.width = viewW * dpr;
       canvas.height = viewH * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // 그리기는 CSS 픽셀 기준
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
@@ -428,7 +437,7 @@
       joyDirX = 0;
       joyDirY = 0;
       stickKnob.style.left = '50%';
-      stickKnob.style.top  = '50%';  // 중앙으로 복귀
+      stickKnob.style.top  = '50%';
     }
 
     function joystickTouchStart(e) {
@@ -458,7 +467,7 @@
       const dx = t.clientX - joyCenterX;
       const dy = t.clientY - joyCenterY;
 
-      const maxR = 38;  // 50 → 38 : 적게 움직여도 최대 입력
+      const maxR = 26;  // 38 → 26 : 더 짧은 이동으로 최대 입력
       let dist = Math.hypot(dx, dy);
       let nx = 0, ny = 0;
       if (dist > 0) {
@@ -468,14 +477,14 @@
         const knobX = joyCenterX + nx * clamped;
         const knobY = joyCenterY + ny * clamped;
         const rect = stickBase.getBoundingClientRect();
-        stickKnob.style.left = ( (knobX - rect.left) / rect.width * 100 ) + '%';
-        stickKnob.style.top  = ( (knobY - rect.top)  / rect.height * 100 ) + '%';
+        stickKnob.style.left = ((knobX - rect.left) / rect.width * 100) + '%';
+        stickKnob.style.top  = ((knobY - rect.top)  / rect.height * 100) + '%';
       } else {
         stickKnob.style.left = '50%';
         stickKnob.style.top  = '50%';
       }
 
-      const deadZone = 0.15;
+      const deadZone = 0.10;  // 0.15 → 0.10 : 방향 전환 더 잘 먹게
       const len = Math.hypot(nx, ny);
       if (len < deadZone) {
         joyDirX = 0;
@@ -530,7 +539,7 @@
     let runEnergy = 0;
     let attackCooldown = 0;
 
-    // ===== 밸런스 상수 (모바일 속도 낮게) =====
+    // ===== 밸런스 상수 =====
     const MELEE_RANGE = 80;
     const BASE_SPAWN_INTERVAL = 1.3;
     const PLAYER_BASE_SPEED = 150;
@@ -539,7 +548,7 @@
     const ENEMY_BASE_HP    = 30;
 
     const BULLET_SPEED = 240;
-    const BULLET_RADIUS = 3;   // 4 → 3
+    const BULLET_RADIUS = 3;
 
     const ENEMY_BULLET_SPEED  = 200;
     const ENEMY_BULLET_DAMAGE = 16;
@@ -621,6 +630,7 @@
     function onPlayerDead() {
       gameMode = 'dead';
 
+      // 완전 초기화 (설정만) - 실제 시작은 버튼 누를 때
       meta.totalEnergy    = 0;
       meta.attackLevel    = 0;
       meta.fireRateLevel  = 0;
@@ -644,18 +654,37 @@
       startOverlay.classList.add('hidden');
     }
 
+    function resetAllProgress() {
+      meta.totalEnergy    = 0;
+      meta.attackLevel    = 0;
+      meta.fireRateLevel  = 0;
+      meta.moveSpeedLevel = 0;
+      meta.stageLevel     = 0;
+      runEnergy = 0;
+      runTime = 0;
+      cycleCount = 0;
+      cycleTime = 0;
+      resetRunForCurrentStage();
+    }
+
     deadRestart.addEventListener('click', () => {
       ensureBgm();
       resetAllProgress();
+      gameMode = 'play';
+      tutorialHint.classList.add('hidden');
+      screenFrame.classList.remove('green');
+      resetJoystick();
       deadOverlay.classList.add('hidden');
-      startOverlay.classList.add('hidden');
     });
 
     clearRestart.addEventListener('click', () => {
       ensureBgm();
       resetAllProgress();
+      gameMode = 'play';
+      tutorialHint.classList.add('hidden');
+      screenFrame.classList.remove('green');
+      resetJoystick();
       clearOverlay.classList.add('hidden');
-      startOverlay.classList.add('hidden');
     });
 
     // ===== 현실로 귀환 / 업그레이드 =====
@@ -729,7 +758,7 @@
       player = {
         x: viewW / 2,
         y: viewH / 2,
-        radius: 12,  // 16 → 12
+        radius: 12,
         hp: 100,
         maxHp: 100
       };
@@ -743,7 +772,7 @@
         boss = {
           x: viewW / 2,
           y: viewH / 3,
-          radius: player.radius * 1.2, // 플레이어 대비 비율 유지
+          radius: player.radius * 1.2,
           hp: 2800,
           maxHp: 2800,
           baseSpeed: 45,
@@ -754,26 +783,19 @@
       updateHud();
     }
 
-    function resetAllProgress() {
-      meta.totalEnergy    = 0;
-      meta.attackLevel    = 0;
-      meta.fireRateLevel  = 0;
-      meta.moveSpeedLevel = 0;
-      meta.stageLevel     = 0;
-      resetRunForCurrentStage();
-    }
-
-    // 시작 버튼
-    startButton.addEventListener('click', () => {
+    // 시작 버튼 / 터치
+    function startGameFromTitle() {
       ensureBgm();
       resetAllProgress();
       startOverlay.classList.add('hidden');
+    }
+
+    startButton.addEventListener('click', () => {
+      startGameFromTitle();
     });
     startOverlay.addEventListener('touchstart', (e) => {
       e.preventDefault();
-      ensureBgm();
-      resetAllProgress();
-      startOverlay.classList.add('hidden');
+      startGameFromTitle();
     }, {passive:false});
 
     // ===== 적 생성 / 종류 =====
@@ -794,7 +816,6 @@
         else if (cycleCount >= 1) stage = 1;
       }
 
-      // 4스테는 보스라 안 옴
       if (stage >= 4) stage = 3;
 
       const r = Math.random();
@@ -853,7 +874,7 @@
 
       enemies.push({
         x, y,
-        radius: 10,   // 14 → 10 (모바일용 축소)
+        radius: 10,
         hp,
         baseSpeed,
         type,
@@ -891,7 +912,7 @@
         }
         cdMul = 1.6;
       } else {
-        // dasher는 기본 탄환 거의 없음
+        // dasher
         if (Math.random() < 0.3) {
           spawnEnemyBullet(e.x, e.y, ux, uy, ENEMY_BULLET_SPEED, ENEMY_BULLET_DAMAGE);
         }
@@ -906,7 +927,7 @@
         x, y,
         vx: ux * speed,
         vy: uy * speed,
-        radius: 3,     // 4 → 3
+        radius: 3,
         damage
       });
     }
@@ -915,7 +936,6 @@
     function updateBoss(dt) {
       if (!boss || gameMode !== 'play') return;
 
-      // 이동
       const dx = player.x - boss.x;
       const dy = player.y - boss.y;
       const dist = Math.hypot(dx, dy) || 1;
@@ -923,13 +943,11 @@
       boss.x += (dx / dist) * speed * dt;
       boss.y += (dy / dist) * speed * dt;
 
-      // 플레이어 접촉 데미지
       const pd = Math.hypot(player.x - boss.x, player.y - boss.y);
       if (pd < player.radius + boss.radius) {
         damagePlayer(BOSS_CONTACT_DPS * dt);
       }
 
-      // 패턴 쿨다운
       boss.patternCooldown -= dt;
       if (boss.patternCooldown <= 0) {
         performBossPattern();
@@ -956,7 +974,6 @@
       const pattern = Math.floor(Math.random() * 4);
 
       if (pattern === 0) {
-        // 전방 넓은 분사
         const count = 18;
         const step = 0.16;
         for (let i = 0; i < count; i++) {
@@ -970,7 +987,6 @@
           );
         }
       } else if (pattern === 1) {
-        // 전방 3열 연속 사격
         const angles = [-0.18, 0, 0.18];
         const speeds = [
           ENEMY_BULLET_SPEED * 1.3,
@@ -991,7 +1007,6 @@
           }
         }
       } else if (pattern === 2) {
-        // 이중 원형 탄막
         const baseCount = 10;
         for (let i = 0; i < baseCount; i++) {
           const ang = (Math.PI * 2 * i) / baseCount;
@@ -1011,7 +1026,6 @@
           );
         }
       } else {
-        // 사방팔방 탄막
         const outerCount = 24;
         const innerCount = 16;
         for (let i = 0; i < outerCount; i++) {
@@ -1079,17 +1093,18 @@
         }
       }
 
-      // 적 스폰
+      // 적 스폰 (2배로)
       if (meta.stageLevel !== 4) {
         spawnTimer -= dt;
         if (spawnTimer <= 0) {
           spawnEnemy();
+          spawnEnemy(); // 한 번에 2마리
           const diffMul = 1 + 0.15 * meta.stageLevel + 0.15 * cycleCount;
           spawnTimer = (BASE_SPAWN_INTERVAL / diffMul) * (0.7 + Math.random() * 0.6);
         }
       }
 
-      // 플레이어 이동 (조이스틱)
+      // 플레이어 이동
       let mvx = joyDirX;
       let mvy = joyDirY;
       if (mvx !== 0 || mvy !== 0) {
@@ -1100,7 +1115,6 @@
         player.x += mvx * speed * dt;
         player.y += mvy * speed * dt;
       }
-      // 화면 안에 가두기
       player.x = Math.max(player.radius, Math.min(viewW - player.radius, player.x));
       player.y = Math.max(player.radius, Math.min(viewH - player.radius, player.y));
 
@@ -1132,7 +1146,6 @@
         e.x += (dx / dist) * speed * dt;
         e.y += (dy / dist) * speed * dt;
 
-        // 플레이어 접촉 데미지 (타입별 차등)
         if (dist < player.radius + e.radius) {
           const contactDps = (e.type === 'dasher') ? 36 : 16;
           damagePlayer(contactDps * dt);
@@ -1201,7 +1214,7 @@
         }
       }
 
-      // 플레이어 탄환 업데이트 & 충돌
+      // 플레이어 탄환
       for (let i = bullets.length - 1; i >= 0; i--) {
         const b = bullets[i];
         b.x += b.vx * dt;
@@ -1247,10 +1260,10 @@
         if (e.hp <= 0) {
           enemies.splice(i, 1);
           const amount = getEnergyAmountForType(e.type);
-          let r = 3;          // 에너지 1짜리 기본 크기
+          let r = 3;
           if (amount === 2) r = 5;
           else if (amount === 4) r = 7;
-          else if (amount >= 8) r = 9; // 적보단 크지 않게
+          else if (amount >= 8) r = 9;
           energies.push({
             x: e.x,
             y: e.y,
@@ -1330,9 +1343,9 @@
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, viewW, viewH);
 
-      // 달
-      const moonX = viewW / 2;
-      const moonY = 60;
+      // 달: 우측 상단
+      const moonX = viewW - 60;
+      const moonY = 50;
       ctx.save();
       ctx.translate(moonX, moonY);
       ctx.beginPath();
@@ -1402,7 +1415,6 @@
         ctx.lineWidth = 4;
         ctx.stroke();
 
-        // 보스 HP 바 (상단)
         const barW = Math.min(viewW - 40, 260);
         const barH = 14;
         const x = (viewW - barW) / 2;
@@ -1457,7 +1469,7 @@
     function loop(now) {
       const dtRaw = (now - lastTime) / 1000;
       lastTime = now;
-      const dt = Math.min(dtRaw, 0.05); // 갑자기 프레임 떨어져도 너무 빨라지지 않게
+      const dt = Math.min(dtRaw, 0.05);
 
       update(dt);
       draw();
@@ -1465,7 +1477,7 @@
     }
     requestAnimationFrame(loop);
 
-    // ===== 서비스워커 등록 (PWA) =====
+    // ===== 서비스워커 등록 =====
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js').catch(() => {});
@@ -1474,4 +1486,3 @@
   </script>
 </body>
 </html>
-
